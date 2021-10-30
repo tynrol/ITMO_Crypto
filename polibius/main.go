@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const matrix_size = 12
+const matrix_size = 13
 
 var polibius = [matrix_size][matrix_size]rune{}
 var letterRunes = make([]rune, 150)
@@ -25,17 +25,20 @@ func delChar(s []rune, index int) []rune {
 }
 
 func randomize() {
-	// letterRunes = []rune(" !#$%&()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz{|}~абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
-	letterRunes = []rune(" !#$%&()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz{|}~абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
+	letterRunes = []rune(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+,-—./[]^_:;<=>?@{|}~абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
 	saveRunes := ""
 	fmt.Println("current polibus square: ")
 	for i := 0; i < matrix_size; i++ {
 		for j := 0; j < matrix_size; j++ {
-			randValue := rand.Intn(len(letterRunes))
-			polibius[i][j] = letterRunes[randValue]
+			if len(letterRunes) == 0 {
+				polibius[i][j] = []rune("&")[0]
+			} else {
+				randValue := rand.Intn(len(letterRunes))
+				polibius[i][j] = letterRunes[randValue]
+				saveRunes = saveRunes + string(letterRunes[randValue])
+				letterRunes = delChar(letterRunes, randValue)
+			}
 			fmt.Print(string(polibius[i][j]), " ")
-			saveRunes = saveRunes + string(letterRunes[randValue])
-			letterRunes = delChar(letterRunes, randValue)
 		}
 		fmt.Println()
 	}
@@ -44,8 +47,20 @@ func randomize() {
 
 func encrypt(msg string) string {
 	var encrypted string
+	var size int
+	r := bufio.NewReader(strings.NewReader(msg))
+	letters := make([]rune, len(msg))
 
-	size := len(msg)
+	//определяем количество символов в файле и записываем их как руны
+	//может есть более деликатный способ, но этот зато рабочий
+	for i := 0; ; i++ {
+		c, _, err := r.ReadRune()
+		if err != nil {
+			size = i
+			break
+		}
+		letters[i] = c
+	}
 
 	x := make([]int, size)
 	y := make([]int, size)
@@ -56,7 +71,7 @@ func encrypt(msg string) string {
 	for k := 0; k < size; k++ {
 		for i := 0; i < matrix_size; i++ {
 			for j := 0; j < matrix_size; j++ {
-				if string(polibius[i][j]) == string(msg[k]) {
+				if polibius[i][j] == letters[k] {
 					x[k] = j
 					y[k] = i
 				}
@@ -87,8 +102,21 @@ func encrypt(msg string) string {
 
 func decrypt(msg string) string {
 	var decrypted string
+	var size int
 
-	size := len(msg)
+	r := bufio.NewReader(strings.NewReader(msg))
+	letters := make([]rune, len(msg))
+
+	//определяем количество символов в файле и записываем их как руны
+	//может есть более деликатный способ, но этот зато рабочий
+	for i := 0; ; i++ {
+		c, _, err := r.ReadRune()
+		if err != nil {
+			size = i
+			break
+		}
+		letters[i] = c
+	}
 
 	x := make([]int, size)
 	y := make([]int, size)
@@ -98,7 +126,7 @@ func decrypt(msg string) string {
 	for k := 0; k < size; k++ {
 		for i := 0; i < matrix_size; i++ {
 			for j := 0; j < matrix_size; j++ {
-				if string(polibius[i][j]) == string(msg[k]) {
+				if polibius[i][j] == letters[k] {
 					z[2*k] = j
 					z[2*k+1] = i
 				}
@@ -115,14 +143,20 @@ func decrypt(msg string) string {
 	}
 	//находим соответсвующие буквы по координатам в массивах x, y
 	for k := 0; k < size; k++ {
-		// fmt.Printf("decrypted: " + string(polibius[y[k]][x[k]]) + " k: ")
 		decrypted = decrypted + string(polibius[y[k]][x[k]])
 	}
 	return decrypted
 }
 
 func help() {
-	fmt.Printf("[encrypt|decrypt] or [randomize]\n")
+	fmt.Printf("[encrypt|decrypt|randomize]\n")
+}
+
+func trim(str string) string {
+	str = strings.Trim(str, "\n")
+	str = strings.Trim(str, "\r")
+	str = strings.Trim(str, " ")
+	return str
 }
 
 func main() {
@@ -133,29 +167,21 @@ func main() {
 	for {
 		fmt.Print(">")
 		text, _ := reader.ReadString('\n')
-		text = strings.Replace(text, "\n", "", -1)
-		text = strings.Trim(text, " ")
+		text = trim(text)
 
 		if strings.Compare("randomize", text) == 0 {
 			randomize()
 		} else if strings.Compare("decrypt", text) == 0 {
 			fmt.Print("enter filename: \n")
 			fmt.Print(">")
-			filename, _ := reader.ReadString('\n')
-			filename = strings.Replace(filename, "\n", "", -1)
-			filename = strings.Trim(filename, " ")
-			// fmt.Println(filename)
-			// decoder := charmap.UTF.NewDecoder()
-			// reader := decoder.Reader(filename)
+			// filename, _ := reader.ReadString('\n')
+			// filename = trim(filename)
+			filename := "e_rus_msg"
 			content, err := ioutil.ReadFile(filename)
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println(content)
 			decrypted := decrypt(string(content))
-
-			// encoder := charmap.UTF8.newEncoder()
-			// s, _ := encoder.String(decrypted)
 			err = ioutil.WriteFile("d_"+filename, []byte(decrypted), 0644)
 			if err != nil {
 				log.Fatal(err)
@@ -164,9 +190,9 @@ func main() {
 		} else if strings.Compare("encrypt", text) == 0 {
 			fmt.Print("enter filename: \n")
 			fmt.Print(">")
-			filename, _ := reader.ReadString('\n')
-			filename = strings.Replace(filename, "\n", "", -1)
-			filename = strings.Trim(filename, " ")
+			// filename, _ := reader.ReadString('\n')
+			// filename = trim(filename)
+			filename := "rus_msg"
 			content, err := ioutil.ReadFile(filename)
 			if err != nil {
 				log.Fatal(err)
@@ -177,7 +203,7 @@ func main() {
 				log.Fatal(err)
 			}
 			fmt.Println("file content encrypted")
-		} else if strings.Compare("exit", text) == 0 {
+		} else if strings.Compare("exit", text) == 0 || strings.Compare("quit", text) == 0 || strings.Compare("q", text) == 0 {
 			os.Exit(0)
 		} else {
 			help()
