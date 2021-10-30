@@ -31,7 +31,7 @@ func randomize() {
 	for i := 0; i < matrix_size; i++ {
 		for j := 0; j < matrix_size; j++ {
 			if len(letterRunes) == 0 {
-				polibius[i][j] = []rune("&")[0]
+				polibius[i][j] = 0
 			} else {
 				randValue := rand.Intn(len(letterRunes))
 				polibius[i][j] = letterRunes[randValue]
@@ -174,9 +174,8 @@ func main() {
 		} else if strings.Compare("decrypt", text) == 0 {
 			fmt.Print("enter filename: \n")
 			fmt.Print(">")
-			// filename, _ := reader.ReadString('\n')
-			// filename = trim(filename)
-			filename := "e_rus_msg"
+			filename, _ := reader.ReadString('\n')
+			filename = trim(filename)
 			content, err := ioutil.ReadFile(filename)
 			if err != nil {
 				log.Fatal(err)
@@ -190,9 +189,8 @@ func main() {
 		} else if strings.Compare("encrypt", text) == 0 {
 			fmt.Print("enter filename: \n")
 			fmt.Print(">")
-			// filename, _ := reader.ReadString('\n')
-			// filename = trim(filename)
-			filename := "rus_msg"
+			filename, _ := reader.ReadString('\n')
+			filename = trim(filename)
 			content, err := ioutil.ReadFile(filename)
 			if err != nil {
 				log.Fatal(err)
