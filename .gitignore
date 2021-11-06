@@ -1,1 +1,3 @@
-polibius/*msg*
+*/*msg*
+*/*.txt
+*/go.mod

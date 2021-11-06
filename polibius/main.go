@@ -3,8 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
 	"strings"
@@ -20,47 +18,37 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func delChar(s []rune, index int) []rune {
-	return append(s[0:index], s[index+1:]...)
-}
-
 func randomize() {
+	// letterRunes = []rune(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+,-—./[]^_:;<=>?@{|}")
 	letterRunes = []rune(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+,-—./[]^_:;<=>?@{|}~абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
+	letterRunes = append(letterRunes, 0xa, 0xb, 0xc, 0xd)
 	saveRunes := ""
 	fmt.Println("current polibus square: ")
 	for i := 0; i < matrix_size; i++ {
 		for j := 0; j < matrix_size; j++ {
 			if len(letterRunes) == 0 {
-				polibius[i][j] = 0
+				polibius[i][j] = rune(12345 + matrix_size*i + j)
 			} else {
 				randValue := rand.Intn(len(letterRunes))
 				polibius[i][j] = letterRunes[randValue]
 				saveRunes = saveRunes + string(letterRunes[randValue])
 				letterRunes = delChar(letterRunes, randValue)
 			}
-			fmt.Print(string(polibius[i][j]), " ")
+			if polibius[i][j] <= 0xd && polibius[i][j] >= 0xa {
+				fmt.Print("  ")
+			} else {
+				fmt.Print(string(polibius[i][j]), " ")
+			}
 		}
 		fmt.Println()
 	}
 
 }
 
-func encrypt(msg string) string {
-	var encrypted string
-	var size int
-	r := bufio.NewReader(strings.NewReader(msg))
-	letters := make([]rune, len(msg))
+func encrypt(runes []rune) []rune {
+	var encrypted []rune
 
-	//определяем количество символов в файле и записываем их как руны
-	//может есть более деликатный способ, но этот зато рабочий
-	for i := 0; ; i++ {
-		c, _, err := r.ReadRune()
-		if err != nil {
-			size = i
-			break
-		}
-		letters[i] = c
-	}
+	size := len(runes)
 
 	x := make([]int, size)
 	y := make([]int, size)
@@ -71,7 +59,7 @@ func encrypt(msg string) string {
 	for k := 0; k < size; k++ {
 		for i := 0; i < matrix_size; i++ {
 			for j := 0; j < matrix_size; j++ {
-				if polibius[i][j] == letters[k] {
+				if polibius[i][j] == runes[k] {
 					x[k] = j
 					y[k] = i
 				}
@@ -93,30 +81,17 @@ func encrypt(msg string) string {
 		y[k] = z[k*2+1]
 	}
 
+	//находим соответсвующие буквы по координатам в массивах x, y
 	for k := 0; k < size; k++ {
-		// fmt.Printf("encrypted: " + string(polibius[y[k]][x[k]]) + " k: ")
-		encrypted = encrypted + string(polibius[y[k]][x[k]])
+		encrypted = append(encrypted, polibius[y[k]][x[k]])
 	}
 	return encrypted
 }
 
-func decrypt(msg string) string {
-	var decrypted string
-	var size int
+func decrypt(runes []rune) []rune {
+	var decrypted []rune
 
-	r := bufio.NewReader(strings.NewReader(msg))
-	letters := make([]rune, len(msg))
-
-	//определяем количество символов в файле и записываем их как руны
-	//может есть более деликатный способ, но этот зато рабочий
-	for i := 0; ; i++ {
-		c, _, err := r.ReadRune()
-		if err != nil {
-			size = i
-			break
-		}
-		letters[i] = c
-	}
+	size := len(runes)
 
 	x := make([]int, size)
 	y := make([]int, size)
@@ -126,7 +101,7 @@ func decrypt(msg string) string {
 	for k := 0; k < size; k++ {
 		for i := 0; i < matrix_size; i++ {
 			for j := 0; j < matrix_size; j++ {
-				if polibius[i][j] == letters[k] {
+				if polibius[i][j] == runes[k] {
 					z[2*k] = j
 					z[2*k+1] = i
 				}
@@ -141,22 +116,12 @@ func decrypt(msg string) string {
 	for k := size; k < 2*size; k++ {
 		y[k-size] = z[k]
 	}
+
 	//находим соответсвующие буквы по координатам в массивах x, y
 	for k := 0; k < size; k++ {
-		decrypted = decrypted + string(polibius[y[k]][x[k]])
+		decrypted = append(decrypted, polibius[y[k]][x[k]])
 	}
 	return decrypted
-}
-
-func help() {
-	fmt.Printf("[encrypt|decrypt|randomize]\n")
-}
-
-func trim(str string) string {
-	str = strings.Trim(str, "\n")
-	str = strings.Trim(str, "\r")
-	str = strings.Trim(str, " ")
-	return str
 }
 
 func main() {
@@ -172,34 +137,36 @@ func main() {
 		if strings.Compare("randomize", text) == 0 {
 			randomize()
 		} else if strings.Compare("decrypt", text) == 0 {
-			fmt.Print("enter filename: \n")
-			fmt.Print(">")
-			filename, _ := reader.ReadString('\n')
+			// fmt.Print("enter filename: \n")
+			// fmt.Print(">")
+			// filename, _ := reader.ReadString('\n')
+			filename := "e_read.txt"
 			filename = trim(filename)
-			content, err := ioutil.ReadFile(filename)
-			if err != nil {
-				log.Fatal(err)
-			}
-			decrypted := decrypt(string(content))
-			err = ioutil.WriteFile("d_"+filename, []byte(decrypted), 0644)
-			if err != nil {
-				log.Fatal(err)
-			}
+			file, err := os.ReadFile(filename)
+			check(err)
+
+			runes := []rune(string(file))
+			decrypted := decrypt(runes)
+
+			err = os.WriteFile("d_"+filename, []byte(string(decrypted)), 0644)
+			check(err)
+
 			fmt.Println("file content decrypted")
 		} else if strings.Compare("encrypt", text) == 0 {
-			fmt.Print("enter filename: \n")
-			fmt.Print(">")
-			filename, _ := reader.ReadString('\n')
+			// fmt.Print("enter filename: \n")
+			// fmt.Print(">")
+			// filename, _ := reader.ReadString('\n')
+			filename := "read.txt"
 			filename = trim(filename)
-			content, err := ioutil.ReadFile(filename)
-			if err != nil {
-				log.Fatal(err)
-			}
-			encrypted := encrypt(string(content))
-			err = ioutil.WriteFile("e_"+filename, []byte(encrypted), 0644)
-			if err != nil {
-				log.Fatal(err)
-			}
+			file, err := os.ReadFile(filename)
+			check(err)
+
+			runes := []rune(string(file))
+			encrypted := encrypt(runes)
+
+			err = os.WriteFile("e_"+filename, []byte(string(encrypted)), 0644)
+			check(err)
+
 			fmt.Println("file content encrypted")
 		} else if strings.Compare("exit", text) == 0 || strings.Compare("quit", text) == 0 || strings.Compare("q", text) == 0 {
 			os.Exit(0)
