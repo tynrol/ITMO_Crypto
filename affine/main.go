@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -13,8 +14,11 @@ import (
 var letters = []rune(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+,-—./[]^_:;<=>?@{|}~абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
 
 var m = len(letters)
-var a = 5
-var b = 7
+var a int
+var b int
+
+// var a = 5
+// var b = 7
 
 func encrypt(input []rune) []rune {
 	size := len(input)
@@ -70,6 +74,16 @@ func analysis(input []rune) {
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("Enter affine cypher keys\nEnter a\n")
+	fmt.Print(">")
+	text, _ := reader.ReadString('\n')
+	text = trim(text)
+	a, _ = strconv.Atoi(text)
+	fmt.Printf("Enter b\n")
+	fmt.Print(">")
+	text, _ = reader.ReadString('\n')
+	text = trim(text)
+	b, _ = strconv.Atoi(text)
 	help()
 
 	for {
