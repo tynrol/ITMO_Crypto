@@ -137,10 +137,10 @@ func main() {
 		if strings.Compare("randomize", text) == 0 {
 			randomize()
 		} else if strings.Compare("decrypt", text) == 0 {
-			// fmt.Print("enter filename: \n")
-			// fmt.Print(">")
-			// filename, _ := reader.ReadString('\n')
-			filename := "e_read.txt"
+			fmt.Print("enter filename: \n")
+			fmt.Print(">")
+			filename, _ := reader.ReadString('\n')
+			// filename := "e_read.txt"
 			filename = trim(filename)
 			file, err := os.ReadFile(filename)
 			check(err)
@@ -153,10 +153,10 @@ func main() {
 
 			fmt.Println("file content decrypted")
 		} else if strings.Compare("encrypt", text) == 0 {
-			// fmt.Print("enter filename: \n")
-			// fmt.Print(">")
-			// filename, _ := reader.ReadString('\n')
-			filename := "read.txt"
+			fmt.Print("enter filename: \n")
+			fmt.Print(">")
+			filename, _ := reader.ReadString('\n')
+			// filename := "read.txt"
 			filename = trim(filename)
 			file, err := os.ReadFile(filename)
 			check(err)

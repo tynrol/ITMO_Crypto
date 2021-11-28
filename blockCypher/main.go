@@ -15,15 +15,18 @@ func main() {
 		help()
 	} else {
 		key, err := os.ReadFile(args[2])
-		input, err := os.ReadFile(args[3])
-		_, err = os.Stat(args[4])
-		var result []byte
 		check(err)
+		input, err := os.ReadFile(args[3])
+		check(err)
+		_, err = os.Stat(args[4])
+		check(err)
+		var result []byte
+
 		if strings.Compare(args[1], "encrypt") == 0 {
-			result, err = encrypt(input, key)
+			result, err = crypt(input, key, true)
 			check(err)
 		} else if strings.Compare(args[1], "decrypt") == 0 {
-			result, err = decrypt(input, key)
+			result, err = crypt(input, key, false)
 			check(err)
 		} else {
 			help()
