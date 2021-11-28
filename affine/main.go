@@ -9,16 +9,11 @@ import (
 	"strings"
 )
 
-// var letters = []rune("abcdefghijklmnopqrstuvwxyz")
-// var letters = []rune(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+,-—./[]^_:;<=>?@{|}")
 var letters = []rune(" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+,-—./[]^_:;<=>?@{|}~абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
 
 var m = len(letters)
 var a int
 var b int
-
-// var a = 5
-// var b = 7
 
 func encrypt(input []rune) []rune {
 	size := len(input)
