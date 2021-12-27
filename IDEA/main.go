@@ -29,18 +29,21 @@ func main() {
 		check(err)
 
 		if strings.Compare(args[1], "encrypt") == 0 {
-			cryptBlock(idea.encryptKey[:], input, result[:])
-			check(err)
+			for i := 0; i < len(input)-blocksize; i = i + blocksize {
+				cryptBlock(idea.encryptKey[:], input[i:i+blocksize], result[i:i+blocksize])
+			}
 			fmt.Println("File content encrypted")
 		} else if strings.Compare(args[1], "decrypt") == 0 {
-			cryptBlock(idea.decryptKey[:], input, result[:])
-			check(err)
+			for i := 0; i < len(input)-blocksize; i = i + blocksize {
+				cryptBlock(idea.decryptKey[:], input[i:i+blocksize], result[i:i+blocksize])
+			}
+
 			fmt.Println("File content decrypted")
 		} else {
 			help()
 		}
-		err = os.WriteFile(args[4], result[:], 0644)
+
+		err = os.WriteFile(args[4], result, 0644)
 		check(err)
-		//{"30303030303030303030303030303030", "3030303030303030", "4EE30E9A0DF346B7"}
 	}
 }
